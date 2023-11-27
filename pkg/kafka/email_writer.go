@@ -16,8 +16,8 @@ func NewKafkaReader() *KafReaderStruct {
 	return &KafReaderStruct{
 		reader: kafka.NewReader(kafka.ReaderConfig{
 			Brokers: []string{"localhost:9092"},
-			Topic:   "test-topic",
-			GroupID: "test-1",
+			Topic:   "email-service",
+			GroupID: "email-1",
 		}),
 	}
 }
@@ -28,14 +28,12 @@ func (k *KafReaderStruct) EmailWriter(ctx context.Context, cfg *config.Conf) err
 		if err != nil {
 			return err
 		}
-
 		select {
 		case <-ctx.Done():
 			log.Println("context cancelled, terminating")
 			return ctx.Err()
 		default:
 			log.Println("sending mail")
-			//err := service.SendEmailToUser(email, k.conf.EMAIL, k.conf.PASSWORD)
 			err := service.SendEmailToUser(message, string(cfg.EMAIL), string(cfg.PASSWORD))
 			if err != nil {
 				return err
