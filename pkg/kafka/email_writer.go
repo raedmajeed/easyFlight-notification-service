@@ -12,36 +12,37 @@ type KafReaderStruct struct {
 	reader *kafka.Reader
 }
 
-func NewKafkaReader() *KafReaderStruct {
+func NewKafkaReader(cfg config.Conf) *KafReaderStruct {
 	return &KafReaderStruct{
 		reader: kafka.NewReader(kafka.ReaderConfig{
-			Brokers: []string{"localhost:9092"},
-			Topic:   "email-service",
+			Brokers: []string{cfg.KAFKABROKER},
+			Topic:   "email-service-2",
 			GroupID: "email-1",
 		}),
 	}
 }
 
-func (k *KafReaderStruct) EmailWriter(ctx context.Context, cfg *config.Conf) error {
+func (k *KafReaderStruct) EmailWriter(ctx context.Context, cfg *config.Conf) {
+	msgCh := make(chan kafka.Message)
+	go k.ReadMessage(ctx, cfg, msgCh)
+	log.Println("message consumer listening")
 	for {
-		message, err := k.reader.FetchMessage(ctx)
-		if err != nil {
-			return err
+		message, _ := k.reader.FetchMessage(ctx)
+		if message.Value != nil {
+			msgCh <- message
 		}
+	}
+}
+
+func (k *KafReaderStruct) ReadMessage(ctx context.Context, cfg *config.Conf, msgCh chan kafka.Message) {
+	for {
+
 		select {
 		case <-ctx.Done():
-			log.Println("context cancelled, terminating")
-			return ctx.Err()
-		default:
-			log.Println("sending mail")
-			err := service.SendEmailToUser(message, string(cfg.EMAIL), string(cfg.PASSWORD))
-			if err != nil {
-				return err
-			}
-			err = k.CommitKafkaMessages(ctx, message)
-			if err != nil {
-				return err
-			}
+			log.Fatalf("context termination")
+		case message := <-msgCh:
+			service.SendEmailToUser(message, string(cfg.EMAIL), string(cfg.PASSWORD))
+			_ = k.CommitKafkaMessages(ctx, message)
 		}
 	}
 }

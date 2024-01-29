@@ -4,24 +4,23 @@ import (
 	"context"
 	"github.com/raedmajeed/notification-service/pkg/config"
 	"github.com/raedmajeed/notification-service/pkg/kafka"
-	"golang.org/x/sync/errgroup"
 	"log"
+	"os"
+	"os/signal"
 )
 
 func main() {
+	sign := make(chan os.Signal)
+	signal.Notify(sign, os.Interrupt)
 	cfg, err := config.Configuration()
 	if err != nil {
 		log.Fatalf("unable to load config file, aborting")
 	}
-	reader := kafka.NewKafkaReader()
-	group, ctx := errgroup.WithContext(context.Background())
-	log.Println("sending to email writer")
-	group.Go(func() error {
-		return reader.EmailWriter(ctx, cfg)
-	})
-	err = group.Wait()
+	reader := kafka.NewKafkaReader(*cfg)
+	go reader.EmailWriter(context.Background(), cfg)
 	if err != nil {
 		return
 	}
+	<-sign
 	log.Println("reading from kafka complete")
 }

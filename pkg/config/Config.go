@@ -6,8 +6,10 @@ import (
 )
 
 type Conf struct {
-	EMAIL    string `mapStructure:"EMAIL"`
-	PASSWORD string `mapStructure:"PASSWORD"`
+	EMAIL       string `mapStructure:"EMAIL"`
+	PASSWORD    string `mapStructure:"PASSWORD"`
+	KAFKABROKER string `mapstructure:"KAFKABROKER"`
+	PORT        string `mapstructure:"PORT"`
 }
 
 func Configuration() (*Conf, error) {

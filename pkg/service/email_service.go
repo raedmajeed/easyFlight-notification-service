@@ -13,15 +13,14 @@ type EmailMessage struct {
 	Content string
 }
 
-func SendEmailToUser(message kafka.Message, senderMail, passwordAdmin string) error {
+func SendEmailToUser(message kafka.Message, senderMail, passwordAdmin string) {
 	sender := senderMail
 	password := passwordAdmin
 
 	var email EmailMessage
 	err := json.Unmarshal(message.Value, &email)
 	if err != nil {
-		log.Println("unable to unmarshal byte value")
-		return err
+		log.Println("unable to unmarshal message")
 	}
 
 	m := gomail.NewMessage()
@@ -30,12 +29,11 @@ func SendEmailToUser(message kafka.Message, senderMail, passwordAdmin string) er
 	m.SetHeader("Subject", email.Subject)
 	m.SetBody("text/plain", email.Content)
 
+	log.Println("message sent to ", email.Email)
 	d := gomail.NewDialer("smtp.gmail.com", 587, sender, password)
 	if err := d.DialAndSend(m); err != nil {
 		log.Printf("Could not send mail %v", err)
-		return err
 	} else {
 		log.Printf("Email Sent Succesfully")
 	}
-	return nil
 }
