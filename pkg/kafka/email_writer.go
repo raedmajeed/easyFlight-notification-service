@@ -27,7 +27,7 @@ func (k *KafReaderStruct) EmailWriter(ctx context.Context, cfg *config.Conf) {
 	go k.ReadMessage(ctx, cfg, msgCh)
 	log.Println("message consumer listening")
 	for {
-		message, _ := k.reader.FetchMessage(ctx)
+		message, _ := k.reader.ReadMessage(ctx)
 		if message.Value != nil {
 			msgCh <- message
 		}

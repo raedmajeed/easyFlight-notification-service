@@ -1,8 +1,9 @@
 package config
 
 import (
-	"fmt"
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
+	"log"
+	"os"
 )
 
 type Conf struct {
@@ -13,18 +14,17 @@ type Conf struct {
 }
 
 func Configuration() (*Conf, error) {
-	var conf Conf
-	viper.SetConfigFile(".env")
-	err := viper.ReadInConfig()
-	if err != nil {
-		fmt.Println("error", err)
-		return &Conf{}, err
-	}
+	var cfg Conf
 
-	err = viper.Unmarshal(&conf)
-	if err != nil {
-		return &Conf{}, err
+	if err := godotenv.Load(".env"); err != nil {
+		os.Exit(1)
 	}
+	cfg.PORT = os.Getenv("PORT")
+	cfg.KAFKABROKER = os.Getenv("KAFKABROKER")
+	cfg.EMAIL = os.Getenv("EMAIL")
+	cfg.PASSWORD = os.Getenv("PASSWORD")
 
-	return &conf, nil
+	log.Println(cfg)
+
+	return &cfg, nil
 }
