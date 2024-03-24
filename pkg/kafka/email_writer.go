@@ -16,7 +16,7 @@ func NewKafkaReader(cfg config.Conf) *KafReaderStruct {
 	return &KafReaderStruct{
 		reader: kafka.NewReader(kafka.ReaderConfig{
 			Brokers: []string{cfg.KAFKABROKER},
-			Topic:   "email-service-2",
+			Topic:   "email-service-3",
 			GroupID: "email-1",
 		}),
 	}

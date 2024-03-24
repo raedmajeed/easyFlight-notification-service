@@ -13,6 +13,7 @@ func main() {
 	sign := make(chan os.Signal)
 	signal.Notify(sign, os.Interrupt)
 	cfg, err := config.Configuration()
+	log.Println("VERSION:3 -> ", cfg)
 	if err != nil {
 		log.Fatalf("unable to load config file, aborting")
 	}
